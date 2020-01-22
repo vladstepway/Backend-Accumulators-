@@ -5,6 +5,8 @@ import by.stepovoy.model.User;
 import by.stepovoy.model.UserDTO;
 import by.stepovoy.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,8 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/users")
@@ -25,6 +25,7 @@ public class UserController {
 
     private final UserService userService;
 
+    @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
@@ -35,18 +36,18 @@ public class UserController {
     }
 
     @GetMapping
-    public ApiResponse<List<UserDTO>> listUser() {
-        return new ApiResponse<>(HttpStatus.OK.value(), "User list fetched successfully", userService.findAll());
+    public Page<UserDTO> getAll(Pageable pageable) {
+        return userService.findAll(pageable);
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<UserDTO> getUser(@PathVariable Long id) {
+    public ApiResponse<User> getById(@PathVariable Long id) {
         return new ApiResponse<>(HttpStatus.OK.value(), "User fetched successfully", userService.findById(id));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<UserDTO> update(@RequestBody UserDTO user,@PathVariable Long id) {
-        return new ApiResponse<>(HttpStatus.OK.value(), "User updated successfully", userService.update(user, id));
+    public ApiResponse<UserDTO> update(@RequestBody UserDTO userDTO, @PathVariable Long id) {
+        return new ApiResponse<>(HttpStatus.OK.value(), "User updated successfully", userService.update(userDTO, id));
     }
 
     @DeleteMapping("/{id}")

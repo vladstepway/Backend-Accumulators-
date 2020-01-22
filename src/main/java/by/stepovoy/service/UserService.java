@@ -2,11 +2,11 @@ package by.stepovoy.service;
 
 import by.stepovoy.model.User;
 import by.stepovoy.model.UserDTO;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserService {
-    User save(UserDTO user);
+    UserDTO save(UserDTO user);
 
     void delete(Long id);
 
@@ -14,5 +14,6 @@ public interface UserService {
 
     User findById(Long id);
 
-    List<User> findAll();
+    Page<UserDTO> findAll(Pageable pageable);
+//    Page<User> findAll(Pageable pageable);
 }

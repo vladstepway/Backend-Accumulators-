@@ -5,12 +5,15 @@ import by.stepovoy.exception.UserNotFoundException;
 import by.stepovoy.model.User;
 import by.stepovoy.model.UserDTO;
 import by.stepovoy.service.UserService;
-import org.springframework.beans.BeanUtils;
+import by.stepovoy.utils.Converter;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -24,9 +27,9 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public User save(UserDTO userDTO) {
+    public UserDTO save(UserDTO userDTO) {
         User user = new User(userDTO);
-        return dao.save(user);
+        return Converter.convertToDTO(dao.save(user), "password");
     }
 
     @Override
@@ -41,8 +44,8 @@ public class UserServiceImpl implements UserService {
     public UserDTO update(UserDTO userDTO, Long id) {
         User user = findById(id);
         if (user != null) {
-            BeanUtils.copyProperties(userDTO, user, "password", "username");
-            dao.save(user);
+            User userToUpdate = Converter.convertToEntity(userDTO, "password", "username");
+            dao.save(userToUpdate);
         }
         return userDTO;
     }
@@ -53,7 +56,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> findAll() {
-        return dao.findAll();
+    public Page<UserDTO> findAll(Pageable pageable) {
+        Page<User> usersPage = dao.findAll(pageable);
+        return new PageImpl<>(
+                usersPage.getContent().stream()
+                        .map(user -> Converter.convertToDTO(user, "password", "username"))
+                        .collect(Collectors.toList()), pageable, usersPage.getTotalElements());
+
     }
+
 }
